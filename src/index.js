@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.js';
 import mailRoutes from './routes/mail.js';
 import assistantRoutes from './routes/assistant.js';
 import webhookRoutes from './routes/webhook.js';
+import mongoose from 'mongoose';
 
 const app = express();
 
@@ -71,8 +72,6 @@ app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(500).json({ error: err.message || 'Internal server error' });
 });
-
-import mongoose from 'mongoose';
 
 // Start server
 async function start() {
