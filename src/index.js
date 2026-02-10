@@ -33,9 +33,19 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', cors({ origin: '*' }), (req, res) => {
+    const mongooseStatus = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting',
+        99: 'uninitialized',
+    };
+
+    const dbState = mongoose.connection.readyState;
+
     res.json({
-        status: 'healthy',
-        mongodb: 'connected',
+        status: dbState === 1 ? 'healthy' : 'degraded',
+        mongodb: mongooseStatus[dbState] || 'unknown',
         gmail_api: config.google.clientId ? 'configured' : 'not configured',
         openai: config.openai.apiKey ? 'configured' : 'not configured',
         pubsub: config.pubsub.topicName ? 'configured' : 'not configured',
@@ -62,18 +72,23 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
+import mongoose from 'mongoose';
+
 // Start server
 async function start() {
     try {
-        await connectDB();
-
-        app.listen(config.port, () => {
-            console.log(`🚀 Server running on http://localhost:${config.port}`);
+        // Start listening FIRST (Crucial for Cloud Health Checks/502s)
+        app.listen(config.port, '0.0.0.0', () => {
+            console.log(`🚀 Server running on http://0.0.0.0:${config.port}`);
             console.log(`📧 Gmail API: ${config.google.clientId ? '✅ Configured' : '❌ Not configured'}`);
             console.log(`🤖 OpenAI: ${config.openai.apiKey ? '✅ Configured' : '❌ Not configured'}`);
             console.log(`📡 Pub/Sub: ${config.pubsub.topicName !== 'projects/your-project/topics/gmail-notifications' ? '✅ Configured' : '⚠️ Using default'}`);
             console.log(`📺 SSE: ✅ Enabled at /events`);
         });
+
+        // Connect to DB asynchronously
+        connectDB();
+
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
