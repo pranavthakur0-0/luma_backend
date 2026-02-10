@@ -24,10 +24,6 @@ export default {
         topicName: process.env.PUBSUB_TOPIC_NAME || 'projects/your-project/topics/gmail-notifications',
     },
 
-    kafka: {
-        brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
-    },
-
     jwt: {
         secret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
         expiresIn: process.env.JWT_EXPIRES_IN || '7d',

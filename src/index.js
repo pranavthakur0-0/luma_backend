@@ -18,7 +18,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: [config.frontendUrl, 'http://localhost:5173', 'http://localhost:5174'],
+    origin: [config.frontendUrl, 'http://localhost:5173', 'https://luma-mail.netlify.app'],
     credentials: true,
 }));
 app.use(express.json());
@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', cors({ origin: '*' }), (req, res) => {
     res.json({
         status: 'healthy',
         mongodb: 'connected',
