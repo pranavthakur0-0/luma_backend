@@ -1,0 +1,32 @@
+t=2026-02-10T15:36:58+0530 lvl=info msg="no configuration paths supplied"
+t=2026-02-10T15:36:58+0530 lvl=info msg="using configuration at default config path" path="/Users/pranavthakur/Library/Application Support/ngrok/ngrok.yml"
+t=2026-02-10T15:36:58+0530 lvl=info msg="open config file" path="/Users/pranavthakur/Library/Application Support/ngrok/ngrok.yml" err=nil
+t=2026-02-10T15:36:58+0530 lvl=info msg="FIPS 140 mode" enabled=false
+t=2026-02-10T15:36:58+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2026-02-10T15:36:59+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-02-10T15:36:59+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-02-10T15:36:59+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:8000 url=https://cami-interciliary-waywardly.ngrok-free.dev
+t=2026-02-10T15:37:01+0530 lvl=info msg="join connections" obj=join id=e6e6d0763e9f l=[::1]:8000 r=66.249.81.163:52362
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=998f4559e6ff l=[::1]:8000 r=66.249.81.168:44004
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=0aebf326a0a7 l=[::1]:8000 r=66.249.81.168:51741
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=b51fa9056d1f l=[::1]:8000 r=66.249.81.160:39948
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=2d2a9a9284dc l=[::1]:8000 r=66.249.81.162:35245
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=1348290938b9 l=[::1]:8000 r=66.249.81.161:52916
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=fd2e7c94c71f l=[::1]:8000 r=66.249.81.162:43746
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=d39649cb4143 l=[::1]:8000 r=66.249.81.163:38073
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=b31dd1e01a30 l=[::1]:8000 r=66.249.81.168:38154
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=de9f94288cee l=[::1]:8000 r=66.249.81.160:36513
+t=2026-02-10T15:37:02+0530 lvl=info msg="join connections" obj=join id=ddc48bdc2cf1 l=[::1]:8000 r=66.249.81.163:39985
+t=2026-02-10T15:37:04+0530 lvl=info msg="join connections" obj=join id=8ace15f6ebcf l=[::1]:8000 r=66.249.81.162:36277
+t=2026-02-10T15:37:36+0530 lvl=info msg="join connections" obj=join id=36128f1a418b l=[::1]:8000 r=66.249.81.162:50800
+t=2026-02-10T15:38:11+0530 lvl=info msg="join connections" obj=join id=ded997dec574 l=[::1]:8000 r=66.249.81.163:38073
+t=2026-02-10T15:50:26+0530 lvl=info msg="join connections" obj=join id=c1ed8a6cddc1 l=[::1]:8000 r=66.249.81.169:55964
+t=2026-02-10T15:59:00+0530 lvl=info msg="join connections" obj=join id=2517e8edef33 l=[::1]:8000 r=66.249.81.168:47313
+t=2026-02-10T16:00:06+0530 lvl=info msg="join connections" obj=join id=49795b3a5795 l=[::1]:8000 r=66.249.81.169:59287
+t=2026-02-10T16:00:50+0530 lvl=info msg="join connections" obj=join id=634d719b7507 l=[::1]:8000 r=66.249.81.160:47580
+t=2026-02-10T16:00:51+0530 lvl=info msg="join connections" obj=join id=69401af98378 l=[::1]:8000 r=66.249.81.163:58002
+t=2026-02-10T16:00:53+0530 lvl=info msg="join connections" obj=join id=d030927ded7a l=[::1]:8000 r=66.249.81.163:57773
+t=2026-02-10T16:00:54+0530 lvl=info msg="join connections" obj=join id=a6c43bae841f l=[::1]:8000 r=66.249.81.168:47313
+t=2026-02-10T16:01:06+0530 lvl=info msg="join connections" obj=join id=95da63ad4c8e l=[::1]:8000 r=66.249.81.163:57773
+t=2026-02-10T16:05:36+0530 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
+t=2026-02-10T16:05:36+0530 lvl=info msg="session closing" obj=tunnels.session err=nil
