@@ -18,8 +18,31 @@ import mongoose from 'mongoose';
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+    config.frontendUrl,
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://luma-mail.netlify.app'
+];
+
 app.use(cors({
-    origin: [config.frontendUrl, 'http://localhost:5173', 'https://luma-mail.netlify.app'],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const sanitizedOrigin = origin.replace(/\/$/, "");
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (!allowed) return false;
+            return allowed.replace(/\/$/, "") === sanitizedOrigin;
+        });
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            console.warn(`CORS: Origin ${origin} not allowed`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 app.use(express.json());
