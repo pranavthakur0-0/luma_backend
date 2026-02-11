@@ -66,22 +66,31 @@ const AI_TOOLS = [
         type: 'function',
         function: {
             name: 'search_emails',
-            description: 'Search emails and display results in the main view. Use for finding specific emails.',
+            description: 'Search for emails based on natural language criteria. Use this when the user asks to "find", "search", or "show" emails matching specific conditions.',
             parameters: {
                 type: 'object',
                 properties: {
-                    query: {
+                    sender: {
                         type: 'string',
-                        description: 'Search query (can include from:, subject:, etc.)',
+                        description: 'The name or email address of the sender.',
                     },
-                    from_address: {
+                    subject_keywords: {
                         type: 'string',
-                        description: 'Filter by sender email or name',
+                        description: 'Keywords to look for in the subject line.',
                     },
-                    subject_contains: {
+                    body_keywords: {
                         type: 'string',
-                        description: 'Filter by subject containing this text',
+                        description: 'Keywords to look for in the email body.',
                     },
+                    has_attachment: {
+                        type: 'boolean',
+                        description: 'Only show emails with attachments.',
+                    },
+                    date_range: {
+                        type: 'string',
+                        enum: ['today', 'yesterday', 'this_week', 'last_week', 'this_month'],
+                        description: 'Filter emails by a relative date range.',
+                    }
                 },
                 required: [],
             },
@@ -120,21 +129,29 @@ const AI_TOOLS = [
         type: 'function',
         function: {
             name: 'open_email',
-            description: "Open a specific email to view its full content. You can specify an email ID directly, provide a search description to find it, or use a list position (e.g., 1 for the first email).",
+            description: "Open a specific email to view its full content. Use structured parameters to find the email.",
             parameters: {
                 type: "object",
                 properties: {
                     email_id: {
                         type: "string",
-                        description: "The unique ID of the email to open (if known)."
+                        description: "The unique ID of the email to open (if known from the list)."
                     },
-                    description: {
+                    sender: {
                         type: "string",
-                        description: "A description of the email to find (e.g., 'email from John about meeting', 'latest invoice')."
+                        description: "The name or email address of the sender to look for."
+                    },
+                    subject: {
+                        type: "string",
+                        description: "Keywords to look for in the subject line."
+                    },
+                    is_latest: {
+                        type: "boolean",
+                        description: "Set to true if the user explicitly asks for the 'latest', 'last', 'newest' email."
                     },
                     list_position: {
                         type: "integer",
-                        description: "The position of the email in the current list to open (1-based index). Use this when the user refers to 'first', 'second', 'last', etc. For 'last', use 0 or -1 contextually, or better yet, infer the index if possible, otherwise rely on description."
+                        description: "The position of the email in the current list to open (1-based, e.g., 1 for top/first)."
                     }
                 },
                 required: []

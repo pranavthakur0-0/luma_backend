@@ -203,6 +203,7 @@ export async function getInbox(accessToken, refreshToken, options = {}) {
     return {
         emails,
         nextPageToken: listResponse.data.nextPageToken,
+        resultSizeEstimate: listResponse.data.resultSizeEstimate,
     };
 }
 
@@ -235,6 +236,7 @@ export async function getSent(accessToken, refreshToken, options = {}) {
     return {
         emails,
         nextPageToken: listResponse.data.nextPageToken,
+        resultSizeEstimate: listResponse.data.resultSizeEstimate,
     };
 }
 
@@ -248,48 +250,7 @@ export async function getEmail(accessToken, refreshToken, emailId) {
     });
 
     return parseMessage(response.data, true);
-}
-
-export async function sendEmail(accessToken, refreshToken, { to, cc, bcc, subject, body, replyToId }) {
-    const gmail = getGmailClient(accessToken, refreshToken);
-
-    const toList = Array.isArray(to) ? to.join(', ') : to;
-    const ccList = cc && (Array.isArray(cc) ? cc.join(', ') : cc);
-    const bccList = bcc && (Array.isArray(bcc) ? bcc.join(', ') : bcc);
-
-    let messageParts = [
-        `To: ${toList}`,
-        `Subject: ${subject}`,
-        'Content-Type: text/plain; charset=utf-8',
-    ];
-
-    if (ccList) messageParts.splice(1, 0, `Cc: ${ccList}`);
-    if (bccList) messageParts.splice(1, 0, `Bcc: ${bccList}`); // Order doesn't strictly matter for headers but nice to keep together
-
-    const rawMessage = [
-        ...messageParts,
-        '',
-        body,
-    ].join('\r\n');
-
-    const encodedMessage = Buffer.from(rawMessage)
-        .toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-
-    const requestBody = { raw: encodedMessage };
-    if (replyToId) {
-        requestBody.threadId = replyToId;
-    }
-
-    const response = await gmail.users.messages.send({
-        userId: 'me',
-        requestBody,
-    });
-
-    return getEmail(accessToken, refreshToken, response.data.id);
-}
+} // ... (rest of file)
 
 export async function searchEmails(accessToken, refreshToken, query, maxResults = 20) {
     const gmail = getGmailClient(accessToken, refreshToken);
@@ -319,6 +280,7 @@ export async function searchEmails(accessToken, refreshToken, query, maxResults 
     return {
         emails,
         nextPageToken: listResponse.data.nextPageToken,
+        resultSizeEstimate: listResponse.data.resultSizeEstimate,
     };
 }
 
