@@ -22,13 +22,23 @@ const AI_TOOLS = [
                         items: { type: 'string' },
                         description: 'List of recipient email addresses',
                     },
+                    cc: {
+                        type: 'array',
+                        items: { type: 'string' },
+                        description: 'List of CC recipient email addresses',
+                    },
+                    bcc: {
+                        type: 'array',
+                        items: { type: 'string' },
+                        description: 'List of BCC recipient email addresses',
+                    },
                     subject: {
                         type: 'string',
                         description: 'Email subject line',
                     },
                     body: {
                         type: 'string',
-                        description: 'Email body content',
+                        description: 'Email body content. MUST serve valid HTML content with proper formatting (paragraphs, line breaks, etc). Use <br> for line breaks and <p> for paragraphs. Should start with a professional greeting and end with a sign-off.',
                     },
                 },
                 required: ['to', 'subject', 'body'],
@@ -170,27 +180,7 @@ const AI_TOOLS = [
             },
         },
     },
-    {
-        type: 'function',
-        function: {
-            name: 'reply_to_email',
-            description: 'Reply to the currently open email or a specific email. Opens compose with reply context.',
-            parameters: {
-                type: 'object',
-                properties: {
-                    email_id: {
-                        type: 'string',
-                        description: 'ID of email to reply to. If not provided, replies to currently open email.',
-                    },
-                    body: {
-                        type: 'string',
-                        description: 'Reply message content',
-                    },
-                },
-                required: [],
-            },
-        },
-    },
+
     {
         type: 'function',
         function: {
@@ -244,6 +234,13 @@ const AI_TOOLS = [
 ];
 
 const SYSTEM_PROMPT = `You are an AI assistant in a conversational chatbot interface. You can render interactive UI components directly in your responses to create rich, visual interactions.
+
+**Email Formatting Rules:**
+When drafting an email (compose_email or reply_to_email):
+1. **Professional Formatting**: Always use a proper greeting (e.g., "Hi [Name],") and sign-off (e.g., "Best regards, [Name]").
+2. **Structure**: Use clear paragraphs for readability.
+3. **HTML**: The body content MUST be formatted with simple HTML tags (<p>, <br>, <ul>, <li>) to ensure it renders correctly in the email client. Do not use Markdown for the email body.
+4. **Context**: Use the provided context (previous emails, user request) to draft relevant and concise content.
 
 **Component Rendering:**
 To display UI components, include special markers in your responses:
