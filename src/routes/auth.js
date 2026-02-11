@@ -32,7 +32,7 @@ router.get('/callback', async (req, res) => {
         const userInfo = await getUserInfo(tokens.access_token);
 
         // Upsert user in database
-        await User.findOneAndUpdate(
+        const user = await User.findOneAndUpdate(
             { email: userInfo.email },
             {
                 email: userInfo.email,
@@ -48,6 +48,7 @@ router.get('/callback', async (req, res) => {
         // Create JWT
         const jwtToken = createToken({
             sub: userInfo.email,
+            userId: user._id, // Add userId to token
             name: userInfo.name,
             picture: userInfo.picture,
             googleAccessToken: tokens.access_token,

@@ -5,13 +5,24 @@
 import { Router } from 'express';
 import { processMessage, processMessageStream, AI_TOOLS } from '../services/ai.js';
 import { Conversation } from '../models/Conversation.js';
+import { User } from '../database.js';
 
 const router = Router();
 
 // GET /assistant/conversations - Get all conversations for user
 router.get('/conversations', async (req, res) => {
     try {
-        const conversations = await Conversation.find({ userId: req.user.userId })
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        const conversations = await Conversation.find({ userId })
             .select('title lastMessageAt createdAt')
             .sort({ lastMessageAt: -1 })
             .limit(50); // Limit to last 50 for performance
@@ -26,9 +37,19 @@ router.get('/conversations', async (req, res) => {
 // GET /assistant/conversations/:id - Get a specific conversation
 router.get('/conversations/:id', async (req, res) => {
     try {
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
         const conversation = await Conversation.findOne({
             _id: req.params.id,
-            userId: req.user.userId
+            userId
         });
 
         if (!conversation) {
@@ -45,9 +66,19 @@ router.get('/conversations/:id', async (req, res) => {
 // DELETE /assistant/conversations/:id - Delete a conversation
 router.delete('/conversations/:id', async (req, res) => {
     try {
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
         const result = await Conversation.deleteOne({
             _id: req.params.id,
-            userId: req.user.userId
+            userId
         });
 
         if (result.deletedCount === 0) {
@@ -65,8 +96,19 @@ router.delete('/conversations/:id', async (req, res) => {
 router.patch('/conversations/:id', async (req, res) => {
     try {
         const { title } = req.body;
+
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
         const conversation = await Conversation.findOneAndUpdate(
-            { _id: req.params.id, userId: req.user.userId },
+            { _id: req.params.id, userId },
             { title },
             { new: true }
         );
@@ -82,6 +124,8 @@ router.patch('/conversations/:id', async (req, res) => {
     }
 });
 
+
+
 // POST /assistant/chat - Process user message (non-streaming)
 router.post('/chat', async (req, res) => {
     try {
@@ -91,20 +135,32 @@ router.post('/chat', async (req, res) => {
             return res.status(400).json({ error: 'message is required' });
         }
 
+        // Ensure userId is available
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
         // 1. Get or create conversation
         let conversation;
         if (conversationId) {
-            conversation = await Conversation.findOne({ _id: conversationId, userId: req.user.userId });
+            conversation = await Conversation.findOne({ _id: conversationId, userId });
         }
 
         if (!conversation) {
             conversation = new Conversation({
-                userId: req.user.userId,
+                userId,
                 title: message.substring(0, 30) + (message.length > 30 ? '...' : ''), // Simple auto-title
                 messages: []
             });
         }
 
+        // ... rest of the handler using `userId` variable instead of `req.user.userId`
         // 2. Add user message
         conversation.messages.push({
             role: 'user',
@@ -113,7 +169,6 @@ router.post('/chat', async (req, res) => {
         });
 
         // 3. Get history for AI context
-        // Only verify last 10 messages for context window efficiency
         const historyForAI = conversation.messages.slice(-10).map(m => ({
             role: m.role,
             content: m.content
@@ -146,6 +201,49 @@ router.post('/chat', async (req, res) => {
     }
 });
 
+// POST /assistant/conversations/:id/messages - Append a message to a conversation
+// Used for syncing client-side tool results (e.g. "Navigated to inbox")
+router.post('/conversations/:id/messages', async (req, res) => {
+    try {
+        const { role, content, type, tool_calls } = req.body;
+
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        const conversation = await Conversation.findOne({
+            _id: req.params.id,
+            userId
+        });
+
+        if (!conversation) {
+            return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        const newMessage = {
+            role,
+            content,
+            type: type || 'text',
+            tool_calls,
+            timestamp: new Date()
+        };
+
+        conversation.messages.push(newMessage);
+        await conversation.save();
+
+        res.json(newMessage);
+    } catch (error) {
+        console.error('Append message error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // POST /assistant/chat/stream - Streaming chat with SSE
 router.post('/chat/stream', async (req, res) => {
     try {
@@ -161,15 +259,27 @@ router.post('/chat/stream', async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
         res.flushHeaders();
 
+        // Ensure userId is available
+        let userId = req.user.userId;
+        if (!userId && req.user.sub) {
+            const user = await User.findOne({ email: req.user.sub });
+            if (user) userId = user._id;
+        }
+
+        if (!userId) {
+            res.write(`data: ${JSON.stringify({ type: 'error', error: 'User not found' })}\n\n`);
+            return res.end();
+        }
+
         // 1. Get or create conversation
         let conversation;
         if (conversationId) {
-            conversation = await Conversation.findOne({ _id: conversationId, userId: req.user.userId });
+            conversation = await Conversation.findOne({ _id: conversationId, userId });
         }
 
         if (!conversation) {
             conversation = new Conversation({
-                userId: req.user.userId,
+                userId,
                 title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
                 messages: []
             });
